@@ -1,5 +1,7 @@
 package dev.juho.profiler;
 
+import dev.juho.profiler.formatters.Formatter;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -102,19 +104,12 @@ public class Profiler {
 		insertNewTime(id);
 	}
 
-	public String getChromeFormat() {
-		if (!enabled) {
-			return "[]";
-		}
+	public Object getData(Formatter<?> formatter) {
+		return formatter.format(this);
+	}
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("{\"displayTimeUnit\": \"ms\", \"traceEvents\": [");
-
-		history.forEach((key, data) -> builder.append(data.getChromeFormat()));
-
-		builder.delete(builder.length() - 1, builder.length());
-		builder.append("]}");
-		return builder.toString();
+	public HashMap<Integer, History> getHistory() {
+		return history;
 	}
 
 	/**
@@ -130,7 +125,7 @@ public class Profiler {
 		history.put(id, idHistory);
 	}
 
-	private static class History {
+	public static class History {
 
 		private String name;
 		private LinkedList<Double> history;
@@ -144,19 +139,12 @@ public class Profiler {
 			history.add(x);
 		}
 
-		public String getChromeFormat() {
-			StringBuilder builder = new StringBuilder();
-
-			for (int i = 0; i < history.size(); i++) {
-				builder.append(timeToChrome(history.get(i), i)).append(",");
-			}
-
-			return builder.toString();
+		public String getName() {
+			return name;
 		}
 
-		private String timeToChrome(double time, int count) {
-			return "{\"name\": \"" + name + "\", \"cat\": \"PERF\", \"ph\": " + (count % 2 == 0 ? "\"B\"" : "\"E\"") + ", \"pid\": -1, \"tid\": -1, \"ts\": " + time + "}";
+		public LinkedList<Double> getHistory() {
+			return history;
 		}
-
 	}
 }
